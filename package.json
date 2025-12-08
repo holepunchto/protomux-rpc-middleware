@@ -19,6 +19,10 @@
     "format": "prettier --write .",
     "test": "npm run lint && brittle test/*"
   },
+  "files": [
+    "lib/",
+    "index.js"
+  ],
   "devDependencies": {
     "b4a": "^1.7.3",
     "brittle": "^3.19.1",

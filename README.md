@@ -12,7 +12,7 @@ Collection of recommended middlewares for protomux-rpc-router to add logging, me
 
 ## API
 
-### `recommended(options)`
+### `const stack = recommended(options)`
 
 Create a composed middleware stack with sensible defaults, in order (outermost first):
 
@@ -32,7 +32,7 @@ Example:
 
 ```js
 const pino = require('pino')
-const { recommended } = require('protomux-rpc-router-middlewares')
+const recommended = require('protomux-rpc-router-middlewares')
 
 const stack = recommended({
   logger: pino({ level: 'debug', name: 'rpc' }),
@@ -53,7 +53,7 @@ Static:
 
 - `Logger.skip`: a middleware that sets `ctx.skipLog = true` to suppress logging for the request.
 
-### `new RateLimit(capacity, intervalMs, toKey, [options])`
+### `const rateLimit = new RateLimit(capacity, intervalMs, toKey, [options])`
 
 Low-level constructor to customize keying.
 
@@ -64,11 +64,17 @@ Low-level constructor to customize keying.
   - `options.promClient`: a `prom-client` module to expose metrics.
   - `options.nrRateLimitsMetricName` (string, default `'rate_limit_number_rate_limits'`): gauge name tracking number of active buckets. Use when there is multiple rate limit active.
 
-Emits:
+`rateLimit.on('rate-limit-refilled', (key, tokens) => {})`
 
-- `rate-limit-refilled` `(key, tokens)`: after each refill tick per key.
-- `rate-limit-acquired` `(key, tokens)`: when a token is consumed.
-- `rate-limit-exceeded` `(key)`: when no tokens are available.
+Emitted every refill interval for each tracked key after its bucket is incremented. `tokens` is the number of tokens after refill. When the bucket reaches capacity, the `key` is limiter key.
+
+`rateLimit.on('rate-limit-acquired', (key, tokens) => {})`
+
+Emitted when a request successfully consumes a token. `tokens` is the remaining tokens after the acquisition.
+
+`rateLimit.on('rate-limit-exceeded', (key) => {})`
+
+Emitted when a request is denied because no tokens are available for the limiter key.
 
 ### `RateLimit.byIp(capacity, intervalMs, [options])`
 
