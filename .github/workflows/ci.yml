@@ -1,0 +1,17 @@
+name: Test
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: Test / ${{ matrix.os }}
+    steps:
+      - uses: holepunchto/actions/node-base@v1
+      - run: npm test
