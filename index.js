@@ -1,11 +1,11 @@
-exports.recommended = require('./lib/recommended')
+const recommended = require('./lib/recommended')
 
-exports.Logger = require('./lib/logger')
+recommended.Logger = require('./lib/logger')
 
-exports.RateLimit = require('./lib/rate-limit')
+recommended.RateLimit = require('./lib/rate-limit')
 
-exports.ConcurrentLimit = require('./lib/concurrent-limit')
+recommended.ConcurrentLimit = require('./lib/concurrent-limit')
 
-exports.encoding = require('./lib/encoding')
+recommended.encoding = require('./lib/encoding')
 
-exports.Stats = require('./lib/stats')
+module.exports = recommended

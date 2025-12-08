@@ -32,7 +32,6 @@
   "dependencies": {
     "compact-encoding": "^2.18.0",
     "hypercore-id-encoding": "^1.3.0",
-    "pino": "^10.1.0",
     "protomux-rpc-router": "github:holepunchto/protomux-rpc-router"
   }
 }
