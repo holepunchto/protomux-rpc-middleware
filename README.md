@@ -14,8 +14,11 @@ const pino = require('pino')
 const router = new ProtomuxRpcRouter()
 
 router.use(recommended())
+```
 
-// Or with configuration overrides
+Alternatively, override the default configuration:
+
+```js
 router.use(
   recommended({
     logger: {
@@ -24,7 +27,6 @@ router.use(
     },
     rateLimit: { capacity: 20, intervalMs: 50 },
     concurrentLimit: { capacity: 32 }
-    // promClient // pass your prom-client module to enable metrics
   })
 )
 
@@ -48,7 +50,7 @@ Options (all optional):
 
 - `logger`: (object) logger configuration. Use `false` to disable logger
   - `logger.instance` (pino): `pino` or `console` compatible logger. default: `console`
-  - `logger.logIp` (boolean): whether or not to log IP of client
+  - `logger.logIp` (boolean): whether or not to log the IP of the clients. Default `false`.
 - `rateLimit` (object): configuration for `RateLimit.byIp`.
   - `rateLimit.capacity` (number): max tokens per IP bucket. Default `10`.
   - `rateLimit.intervalMs` (number): milliseconds to refill 1 token. Default `100`.
@@ -71,9 +73,9 @@ const stack = recommended({
 
 ### `new Logger(logger, [options])`
 
-Create a logging middleware using a `pino` logger.
+Create a logging middleware using either `console` or a `pino` logger.
 
-- `logger`: a `pino` logger instance to write logs.
+- `logger`: `console` or a `pino` logger instance to write logs.
 - `options` (optional): object configuring the middleware:
   - `options.logIp` (boolean, default `false`): include the connection IP in logs.
 
@@ -90,7 +92,7 @@ Low-level constructor to customize keying.
 - `toKey(ctx)` (function): maps a `ctx` to a limiter key.
 - `options` (optional): metrics options:
   - `options.promClient`: a `prom-client` module to expose metrics.
-  - `options.nrRateLimitsMetricName` (string, default `'rate_limit_number_rate_limits'`): gauge name tracking number of active buckets. Use when there is multiple rate limit active.
+  - `options.nrRateLimitsMetricName` (string, default `rate_limit_number_rate_limits`): gauge name tracking number of active buckets. Use when there are multiple rate limiters active.
 
 `rateLimit.on('rate-limit-refilled', (key, tokens) => {})`
 
@@ -106,11 +108,11 @@ Emitted when a request is denied because no tokens are available for the limiter
 
 ### `RateLimit.byIp(capacity, intervalMs, [options])`
 
-Create a token-bucket rate limiter per request IP. See constructor for parameters.
+Create a token-bucket rate limiter per request IP. See the `RateLimit` constructor for the parameters.
 
 ### `RateLimit.byPublicKey(capacity, intervalMs, [options])`
 
-Create a token-bucket rate limiter per remote public key. See constructor for parameters.
+Create a token-bucket rate limiter per remote public key. See the `RateLimit` constructor for the parameters.
 
 ### `new ConcurrentLimit(capacity, toKey)`
 
@@ -121,12 +123,8 @@ Low-level constructor to customize keying.
 
 ### `ConcurrentLimit.byIp(capacity)`
 
-Create a concurrent limiter per request IP. See constructor for parameters.
+Create a concurrent limiter per request IP. See the `ConcurrentLimit` constructor for the parameters.
 
 ### `ConcurrentLimit.byPublicKey(capacity)`
 
-Create a concurrent limiter per remote public key. See constructor for parameters.
-
-## License
-
-Apache-2.0
+Create a concurrent limiter per remote public key. See the `ConcurrentLimit` constructor for the parameters.
