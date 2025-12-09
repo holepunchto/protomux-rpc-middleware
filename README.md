@@ -50,7 +50,7 @@ Options (all optional):
 
 - `logger`: (object) logger configuration. Use `false` to disable logger
   - `logger.instance` (pino): `pino` or `console` compatible logger. default: `console`
-  - `logger.logIp` (boolean): whether or not to log the IP of the clients
+  - `logger.logIp` (boolean): whether or not to log the IP of the clients. Default `false`.
 - `rateLimit` (object): configuration for `RateLimit.byIp`.
   - `rateLimit.capacity` (number): max tokens per IP bucket. Default `10`.
   - `rateLimit.intervalMs` (number): milliseconds to refill 1 token. Default `100`.
