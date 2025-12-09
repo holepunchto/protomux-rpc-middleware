@@ -6,6 +6,4 @@ recommended.RateLimit = require('./lib/rate-limit')
 
 recommended.ConcurrentLimit = require('./lib/concurrent-limit')
 
-recommended.encoding = require('./lib/encoding')
-
 module.exports = recommended
