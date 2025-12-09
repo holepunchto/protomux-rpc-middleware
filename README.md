@@ -17,6 +17,7 @@ router.use(recommended())
 ```
 
 Alternatively, override the default configuration:
+
 ```js
 router.use(
   recommended({
