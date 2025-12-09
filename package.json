@@ -1,14 +1,14 @@
 {
-  "name": "protomux-rpc-router-middlewares",
+  "name": "protomux-rpc-middleware",
   "version": "0.0.1",
   "description": "Protomux RPC router recommended middlewares",
-  "homepage": "https://github.com/holepunchto/protomux-rpc-router-middlewares#readme",
+  "homepage": "https://github.com/holepunchto/protomux-rpc-middleware#readme",
   "bugs": {
-    "url": "https://github.com/holepunchto/protomux-rpc-router-middlewares/issues"
+    "url": "https://github.com/holepunchto/protomux-rpc-middleware/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/holepunchto/protomux-rpc-router-middlewares.git"
+    "url": "git+ssh://git@github.com/holepunchto/protomux-rpc-middleware.git"
   },
   "license": "Apache-2.0",
   "author": "Holepunch Inc",

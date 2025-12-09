@@ -1,13 +1,41 @@
 # Protomux RPC Router Middlewares
 
-Collection of recommended middlewares for protomux-rpc-router to add logging, metrics, rate limiting, concurrent limiting, and request/response encoding.
+Collection of recommended middlewares for protomux-rpc-router to add logging, metrics, rate limiting & concurrent limiting.
+
+## Usage
+
+Use the precomposed `recommended` middleware stack in your app with `protomux-rpc-router`:
+
+```js
+const ProtomuxRpcRouter = require('protomux-rpc-router')
+const recommended = require('protomux-rpc-middleware')
+const pino = require('pino')
+
+const router = new ProtomuxRpcRouter()
+
+router.use(recommended())
+
+// Or with configuration overrides
+router.use(
+  recommended({
+    logger: {
+      instance: pino({ level: 'info', name: 'rpc' }),
+      logIp: true
+    },
+    rateLimit: { capacity: 20, intervalMs: 50 },
+    concurrentLimit: { capacity: 32 }
+    // promClient // pass your prom-client module to enable metrics
+  })
+)
+
+router.method('echo', (req) => req)
+```
 
 ## Exports
 
 - `Logger`: Pino-based request logger middleware.
 - `RateLimit`: Token-bucket rate limiter middleware with `byIp`/`byPublicKey` factories.
 - `ConcurrentLimit`: Concurrency limiter for in-flight requests per key (`byIp`/`byPublicKey`).
-- `encoding(options)`: Per-method codec to decode request and encode response via `compact-encoding`.
 - `recommended(options)`: Precomposed stack: `Logger(console)` → `RateLimit.byIp(10, 100)` → `ConcurrentLimit.byIp(16)`. Accepts overrides via `options`.
 
 ## API
@@ -18,9 +46,9 @@ Create a composed middleware stack with sensible defaults, in order (outermost f
 
 Options (all optional):
 
-- `logger`: (object) logger configuration
+- `logger`: (object) logger configuration. Use `false` to disable logger
   - `logger.instance` (pino): `pino` or `console` compatible logger. default: `console`
-  - `logger.logIp` (boolean): whenever or not to log IP of client
+  - `logger.logIp` (boolean): whether or not to log IP of client
 - `rateLimit` (object): configuration for `RateLimit.byIp`.
   - `rateLimit.capacity` (number): max tokens per IP bucket. Default `10`.
   - `rateLimit.intervalMs` (number): milliseconds to refill 1 token. Default `100`.
@@ -32,7 +60,7 @@ Example:
 
 ```js
 const pino = require('pino')
-const recommended = require('protomux-rpc-router-middlewares')
+const recommended = require('protomux-rpc-middleware')
 
 const stack = recommended({
   logger: pino({ level: 'debug', name: 'rpc' }),
@@ -98,13 +126,6 @@ Create a concurrent limiter per request IP. See constructor for parameters.
 ### `ConcurrentLimit.byPublicKey(capacity)`
 
 Create a concurrent limiter per remote public key. See constructor for parameters.
-
-### `encoding({ request, response })`
-
-Per-method middleware to decode request and encode response using `compact-encoding` encoders.
-
-- `request` (optional): a `compact-encoding` encoder used to decode `ctx.value` before invoking the handler.
-- `response` (optional): a `compact-encoding` encoder used to encode the handler result.
 
 ## License
 
