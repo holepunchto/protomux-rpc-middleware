@@ -4,7 +4,9 @@ const HyperDHT = require('hyperdht')
 const ProtomuxRpcClient = require('protomux-rpc-client')
 const { simpleSetup, setUpNetwork, setUpServer, createKeyPair } = require('./helper')
 const ProtomuxRpcRouter = require('protomux-rpc-router')
+const promClient = require('prom-client')
 const { byPublicKey } = require('../lib/rate-limit')
+const RateLimit = require('../lib/rate-limit')
 
 test('rateLimit.byPublicKey serializes requests for same client', async (t) => {
   const router = new ProtomuxRpcRouter()
@@ -245,4 +247,44 @@ test('rateLimit.byPublicKey different dht clients but shared keypair', async (t)
 
   t.is(successCount, 2, 'success count')
   t.is(errorCount, 6, 'error count')
+})
+
+test('rateLimit.registerMetrics reports active buckets size', async (t) => {
+  // construct directly with custom toKey
+  const rateLimit = new RateLimit(2, 500, (ctx) => ctx.value)
+  rateLimit.onopen()
+  t.teardown(() => rateLimit.onclose())
+
+  rateLimit.registerMetrics(promClient)
+
+  rateLimit.onrequest({ value: 'a' }, () => {})
+  rateLimit.onrequest({ value: 'a' }, () => {})
+  rateLimit.onrequest({ value: 'b' }, () => {})
+
+  for (const metric of promClient.register.getMetricsAsArray()) {
+    await metric.collect()
+  }
+
+  const metrics1 = await promClient.register.metrics()
+  t.ok(metrics1.includes('rate_limit_number_rate_limits 2'), 'number of active buckets is 2')
+
+  await new Promise((resolve) => setTimeout(resolve, 600))
+
+  for (const metric of promClient.register.getMetricsAsArray()) {
+    await metric.collect()
+  }
+
+  const metrics2 = await promClient.register.metrics()
+  t.ok(
+    metrics2.includes('rate_limit_number_rate_limits 1'),
+    'number of active buckets is 1 after 1 refill'
+  )
+
+  await new Promise((resolve) => setTimeout(resolve, 600))
+
+  const metrics3 = await promClient.register.metrics()
+  t.ok(
+    metrics3.includes('rate_limit_number_rate_limits 0'),
+    'number of active buckets is 0 after 2 refills'
+  )
 })

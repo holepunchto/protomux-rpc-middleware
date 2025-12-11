@@ -56,7 +56,6 @@ Options (all optional):
   - `rateLimit.intervalMs` (number): milliseconds to refill 1 token. Default `100`.
 - `concurrentLimit` (object): configuration for `ConcurrentLimit.byIp`.
   - `concurrentLimit.capacity` (number): max in-flight requests per IP. Default `16`.
-- `promClient`: prometheus client to use for metrics. Defaults to `null`
 
 Example:
 
@@ -91,7 +90,6 @@ Low-level constructor to customize keying.
 - `intervalMs` (number): milliseconds to refill 1 token.
 - `toKey(ctx)` (function): maps a `ctx` to a limiter key.
 - `options` (optional): metrics options:
-  - `options.promClient`: a `prom-client` module to expose metrics.
   - `options.nrRateLimitsMetricName` (string, default `rate_limit_number_rate_limits`): gauge name tracking number of active buckets. Use when there are multiple rate limiters active.
 
 `rateLimit.on('rate-limit-refilled', (key, tokens) => {})`
