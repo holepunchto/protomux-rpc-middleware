@@ -1,6 +1,6 @@
 {
   "name": "protomux-rpc-middleware",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Protomux RPC router recommended middlewares",
   "homepage": "https://github.com/holepunchto/protomux-rpc-middleware#readme",
   "bugs": {
