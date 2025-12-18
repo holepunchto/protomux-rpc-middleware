@@ -66,6 +66,7 @@ test('logger logs warn on error with message and code', async (t) => {
   const entry = mockLogger.calls[0]
   t.is(entry.level, 'warn')
   t.ok(entry.msg.includes('[method=boom]'), 'method in log')
+  t.ok(entry.msg.includes('[requestId='), 'requestId in log')
   t.ok(entry.msg.includes('[publicKey='), 'publicKey in log')
   t.ok(entry.msg.includes('failed'), 'failed in log')
   t.ok(entry.msg.includes('[message=boom]'), 'message in log')
