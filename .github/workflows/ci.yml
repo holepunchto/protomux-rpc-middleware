@@ -15,3 +15,15 @@ jobs:
     steps:
       - uses: holepunchto/actions/node-base@v1
       - run: npm test
+  test-ns:
+    runs-on: ubuntu-latest
+    name: Test-ns / ubuntu-latest
+    steps:
+      - uses: holepunchto/actions/node-base@v1
+      - name: Setup network namespaces
+        run: sudo .github/scripts/setup.sh
+      - name: Run netns tests
+        run: sudo npm run test:netns
+      - name: Teardown network namespaces
+        if: always()
+        run: sudo .github/scripts/teardown.sh

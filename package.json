@@ -17,7 +17,8 @@
   "scripts": {
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "test": "npm run lint && brittle test/*"
+    "test": "npm run lint && brittle test/*.test.js",
+    "test:netns": "brittle test/*.netns-test.js"
   },
   "files": [
     "lib/",

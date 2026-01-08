@@ -4,9 +4,10 @@ const ProtomuxRpcClient = require('protomux-rpc-client')
 const cenc = require('compact-encoding')
 const b4a = require('b4a')
 const sodium = require('sodium-universal')
+const { spawn } = require('child_process')
 
-exports.setUpNetwork = async (t) => {
-  const testnet = await getTestnet()
+exports.setUpNetwork = async (t, size = 10, opts = {}) => {
+  const testnet = await getTestnet(size, opts)
   t.teardown(async () => {
     await testnet.destroy()
   })
@@ -59,4 +60,29 @@ exports.createKeyPair = (seed) => {
   if (seed) sodium.crypto_sign_seed_keypair(publicKey, secretKey, seed)
   else sodium.crypto_sign_keypair(publicKey, secretKey)
   return { publicKey, secretKey }
+}
+
+exports.execFileOnNetns = async (netns, file, args, opts) => {
+  return await new Promise((resolve, reject) => {
+    const cp = spawn('ip', ['netns', 'exec', netns, process.execPath, file, ...args], opts)
+    let stdout = ''
+    let stderr = ''
+
+    cp.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+    cp.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+    cp.on('close', (code) => {
+      if (code !== 0) {
+        try {
+          const parsedError = JSON.parse(stderr)
+          reject(parsedError)
+        } catch (error) {
+          reject(new Error(`Command failed with code ${code}`))
+        }
+      } else resolve(stdout)
+    })
+  })
 }

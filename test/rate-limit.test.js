@@ -2,9 +2,17 @@ const test = require('brittle')
 const b4a = require('b4a')
 const HyperDHT = require('hyperdht')
 const ProtomuxRpcClient = require('protomux-rpc-client')
-const { simpleSetup, setUpNetwork, setUpServer, createKeyPair } = require('./helper')
+const {
+  simpleSetup,
+  setUpNetwork,
+  setUpServer,
+  createKeyPair,
+  execFileOnNetns
+} = require('./helper')
 const ProtomuxRpcRouter = require('protomux-rpc-router')
 const promClient = require('prom-client')
+const IdEnc = require('hypercore-id-encoding')
+const path = require('path')
 const { byPublicKey } = require('../lib/rate-limit')
 const RateLimit = require('../lib/rate-limit')
 
