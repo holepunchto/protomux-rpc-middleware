@@ -1,7 +1,7 @@
 const test = require('brittle')
 const ProtomuxRpcRouter = require('protomux-rpc-router')
 const RateLimit = require('../lib/rate-limit')
-const { setUpNetwork, setUpServer, execFileOnNetns } = require('./helper')
+const { setUpNetwork, setUpServer, execFileOnNetns } = require('../test/helper')
 const path = require('path')
 const IdEnc = require('hypercore-id-encoding')
 
