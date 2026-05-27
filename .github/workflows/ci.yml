@@ -8,13 +8,15 @@ jobs:
   test:
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
+        node-version: [lts/*]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     name: Test / ${{ matrix.os }}
     steps:
       - uses: holepunchto/actions/node-base@v1
       - run: npm test
+      - run: npm -g install bare
+      - run: npm run test:bare
   test-netns:
     runs-on: ubuntu-latest
     name: Test with NetNS / linux-only
