@@ -17,8 +17,9 @@
   "scripts": {
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "test": "npm run lint && brittle test/*.test.js",
-    "test:netns": "brittle test-netns/*.test.js"
+    "test": "npm run lint && lunte && brittle-node test/*.test.js",
+    "test:bare": "brittle-bare test/*.test.js",
+    "test:netns": "brittle-node test-netns/*.test.js"
   },
   "files": [
     "lib/",
@@ -26,9 +27,11 @@
   ],
   "devDependencies": {
     "b4a": "^1.7.3",
-    "brittle": "^3.19.1",
+    "bare-prom-client": "^15.1.6",
+    "brittle": "^4.0.0",
     "compact-encoding": "^3.0.0",
     "hyperdht": "^6.27.0",
+    "lunte": "^1.8.0",
     "prettier": "^3.6.2",
     "prettier-config-holepunch": "^2.0.0",
     "prom-client": "^15.1.3",
