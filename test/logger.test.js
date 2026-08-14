@@ -11,8 +11,8 @@ function createMockLogger() {
     info(msg) {
       calls.push({ level: 'info', msg })
     },
-    warn(msg) {
-      calls.push({ level: 'warn', msg })
+    warn(mergingObject, msg) {
+      calls.push({ ...mergingObject, level: 'warn', msg })
     }
   }
 }
@@ -72,6 +72,8 @@ test('logger logs warn on error with message and code', async (t) => {
   t.ok(entry.msg.includes('[message=boom]'), 'message in log')
   t.ok(entry.msg.includes('[code=E_BOOM]'), 'code in log')
   t.ok(entry.msg.includes('after'), 'after in log')
+  t.ok(entry.err instanceof Error, 'error in merging object')
+  t.ok(entry.err.stack.includes('Error: boom'), 'stack in error')
 })
 
 test('logger includes ip when logIp=true', async (t) => {
