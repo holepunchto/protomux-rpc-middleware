@@ -72,6 +72,8 @@ test('logger logs warn on error with message and code', async (t) => {
   t.ok(entry.msg.includes('[message=boom]'), 'message in log')
   t.ok(entry.msg.includes('[code=E_BOOM]'), 'code in log')
   t.ok(entry.msg.includes('after'), 'after in log')
+  t.ok(entry.msg.includes('[stack='), 'stack in log')
+  t.ok(entry.msg.includes('Error: boom'), 'stack contents in log')
 })
 
 test('logger includes ip when logIp=true', async (t) => {
