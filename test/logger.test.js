@@ -1,19 +1,25 @@
 const test = require('brittle')
 const b4a = require('b4a')
+const pino = require('pino')
+const { Writable } = require('stream')
 const ProtomuxRpcRouter = require('protomux-rpc-router')
 const { simpleSetup } = require('./helper')
 const LoggerMiddleware = require('../lib/logger')
 
-function createMockLogger() {
-  const calls = []
-  return {
-    calls,
-    info(msg) {
-      calls.push({ level: 'info', msg })
-    },
-    warn(msg) {
-      calls.push({ level: 'warn', msg })
+// Use a real Pino logger to test its JSON output and capture each log in memory.
+function createLogger() {
+  const entries = []
+  const stream = new Writable({
+    write(chunk, encoding, callback) {
+      entries.push(JSON.parse(chunk.toString()))
+      callback(null)
     }
+  })
+
+  return {
+    entries,
+    logger: pino(stream),
+    close: () => new Promise((resolve) => stream.end(resolve))
   }
 }
 
@@ -23,22 +29,24 @@ test('logger logs info on success', async (t) => {
     await router.close()
   })
 
-  const mockLogger = createMockLogger()
-  const loggerMw = new LoggerMiddleware(mockLogger)
+  const { logger, entries, close } = createLogger()
+  const loggerMw = new LoggerMiddleware(logger)
   router.use(loggerMw)
 
   router.method('echo', (req) => req)
 
   const makeRequest = await simpleSetup(t, router)
   await makeRequest('echo', b4a.from('foo'))
+  await close()
 
-  t.is(mockLogger.calls.length, 1)
-  const entry = mockLogger.calls[0]
-  t.is(entry.level, 'info')
-  t.ok(entry.msg.includes('[method=echo]'))
-  t.ok(entry.msg.includes('[publicKey='))
-  t.ok(entry.msg.includes('succeeded'))
-  t.ok(entry.msg.includes('after'))
+  t.is(entries.length, 1)
+  const entry = entries[0]
+  t.is(entry.level, 30)
+  t.is(entry.method, 'echo')
+  t.ok(entry.requestId, 'requestId in log')
+  t.ok(entry.publicKey, 'publicKey in log')
+  t.ok(entry.duration >= 0, 'duration in log')
+  t.is(entry.msg, 'Request succeeded')
 })
 
 test('logger logs warn on error with message and code', async (t) => {
@@ -47,8 +55,8 @@ test('logger logs warn on error with message and code', async (t) => {
     await router.close()
   })
 
-  const mockLogger = createMockLogger()
-  const loggerMw = new LoggerMiddleware(mockLogger)
+  const { logger, entries, close } = createLogger()
+  const loggerMw = new LoggerMiddleware(logger)
   router.use(loggerMw)
 
   router.method('boom', () => {
@@ -61,19 +69,19 @@ test('logger logs warn on error with message and code', async (t) => {
   await t.exception(async () => {
     await makeRequest('boom', b4a.from('x'))
   })
+  await close()
 
-  t.is(mockLogger.calls.length, 1)
-  const entry = mockLogger.calls[0]
-  t.is(entry.level, 'warn')
-  t.ok(entry.msg.includes('[method=boom]'), 'method in log')
-  t.ok(entry.msg.includes('[requestId='), 'requestId in log')
-  t.ok(entry.msg.includes('[publicKey='), 'publicKey in log')
-  t.ok(entry.msg.includes('failed'), 'failed in log')
-  t.ok(entry.msg.includes('[message=boom]'), 'message in log')
-  t.ok(entry.msg.includes('[code=E_BOOM]'), 'code in log')
-  t.ok(entry.msg.includes('after'), 'after in log')
-  t.ok(entry.msg.includes('[stack='), 'stack in log')
-  t.ok(entry.msg.includes('Error: boom'), 'stack contents in log')
+  t.is(entries.length, 1)
+  const entry = entries[0]
+  t.is(entry.level, 40)
+  t.is(entry.method, 'boom', 'method in log')
+  t.ok(entry.requestId, 'requestId in log')
+  t.ok(entry.publicKey, 'publicKey in log')
+  t.ok(entry.duration >= 0, 'duration in log')
+  t.is(entry.err.message, 'boom', 'error message in log')
+  t.is(entry.err.code, 'E_BOOM', 'error code in log')
+  t.ok(entry.err.stack.includes('Error: boom'), 'error stack in log')
+  t.is(entry.msg, 'Request failed')
 })
 
 test('logger includes ip when logIp=true', async (t) => {
@@ -82,19 +90,20 @@ test('logger includes ip when logIp=true', async (t) => {
     await router.close()
   })
 
-  const mockLogger = createMockLogger()
-  const loggerMw = new LoggerMiddleware(mockLogger, { logIp: true })
+  const { logger, entries, close } = createLogger()
+  const loggerMw = new LoggerMiddleware(logger, { logIp: true })
   router.use(loggerMw)
 
   router.method('echo', (req) => req)
 
   const makeRequest = await simpleSetup(t, router)
   await makeRequest('echo', b4a.from('hello'))
+  await close()
 
-  t.is(mockLogger.calls.length, 1)
-  const entry = mockLogger.calls[0]
-  t.is(entry.level, 'info')
-  t.ok(entry.msg.includes('[ip='), 'ip in log')
+  t.is(entries.length, 1)
+  const entry = entries[0]
+  t.is(entry.level, 30)
+  t.ok(entry.ip, 'ip in log')
 })
 
 test('logger respects skip flag (no logs emitted)', async (t) => {
@@ -103,14 +112,15 @@ test('logger respects skip flag (no logs emitted)', async (t) => {
     await router.close()
   })
 
-  const mockLogger = createMockLogger()
-  const loggerMw = new LoggerMiddleware(mockLogger)
+  const { logger, entries, close } = createLogger()
+  const loggerMw = new LoggerMiddleware(logger)
   router.use(loggerMw)
 
   router.method('echo', (req) => req).use(LoggerMiddleware.skip)
 
   const makeRequest = await simpleSetup(t, router)
   await makeRequest('echo', b4a.from('ok'))
+  await close()
 
-  t.is(mockLogger.calls.length, 0, 'no logs emitted')
+  t.is(entries.length, 0, 'no logs emitted')
 })

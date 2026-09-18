@@ -40,11 +40,11 @@ function createMockLogger() {
   const calls = []
   return {
     calls,
-    info(msg) {
-      calls.push({ level: 'info', msg })
+    info(bindings, msg) {
+      calls.push({ level: 'info', bindings, msg })
     },
-    warn(msg) {
-      calls.push({ level: 'warn', msg })
+    warn(bindings, msg) {
+      calls.push({ level: 'warn', bindings, msg })
     }
   }
 }
@@ -70,11 +70,12 @@ test('recommended uses provided logger and logs ip when enabled', async (t) => {
   t.is(mockLogger.calls.length, 1)
   const entry = mockLogger.calls[0]
   t.is(entry.level, 'info')
-  t.ok(entry.msg.includes('[method=echo]'))
-  t.ok(entry.msg.includes('[publicKey='))
-  t.ok(entry.msg.includes('succeeded'))
-  t.ok(entry.msg.includes('after'))
-  t.ok(entry.msg.includes('[ip='), 'ip in log')
+  t.is(entry.bindings.method, 'echo')
+  t.ok(entry.bindings.requestId, 'requestId in log')
+  t.ok(entry.bindings.publicKey, 'publicKey in log')
+  t.ok(entry.bindings.duration >= 0, 'duration in log')
+  t.ok(entry.bindings.ip, 'ip in log')
+  t.is(entry.msg, 'Request succeeded')
 })
 
 test('recommended applies rateLimit override (capacity=1)', async (t) => {
